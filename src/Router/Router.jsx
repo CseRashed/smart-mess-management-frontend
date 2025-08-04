@@ -94,7 +94,9 @@ const router = createBrowserRouter([
           },
           {
             path:'notice',
-            element:<Notice></Notice>
+            element:<ManagerRoute>
+              <Notice></Notice>
+            </ManagerRoute>
 
           },
           {

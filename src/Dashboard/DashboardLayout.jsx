@@ -128,10 +128,15 @@ const handleLogout = async () => {
             History
           </Link>
 )} 
-  
-          <Link to="notice" className="block text-red-600 hover:text-emerald-600">
+       {currentUser?.role==="Manager"&&(
+
+           <Link to="notice" className="block text-red-600 hover:text-emerald-600">
             Notice
           </Link>
+)} 
+  
+         
+
           <Link  onClick={handleLogout} to="/" className="block hover:text-red-600">
             Log Out
           </Link>
