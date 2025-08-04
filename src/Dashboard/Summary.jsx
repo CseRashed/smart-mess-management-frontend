@@ -135,11 +135,16 @@ useEffect(() => {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/settlement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const token = localStorage.getItem('token');
+
+const res = await fetch(`${import.meta.env.VITE_API}/settlement`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`  // ✅ attach the token
+  },
+  body: JSON.stringify(payload),
+});
 
       const data = await res.json();
       if (data.insertedId) {
