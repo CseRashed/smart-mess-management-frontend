@@ -4,7 +4,6 @@ import { Link, Outlet } from 'react-router-dom';
 import useMess from '../../Hooks/useMess';
 import { AuthContext } from '../AuthProvider/AuthProvider';
 import useMembers from '../../Hooks/useMembers';
-import Loader from '../compontens/Loader';
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

@@ -47,8 +47,7 @@ export default function Profile() {
 
   // Calculate Meals
   useEffect(() => {
-    if (!user?.email || !meals.length) return;
-    if (!userInfo) return;
+    if (!user?.email || !meals.length || !userInfo) return;
 
     const myMeals = meals.filter(m => m.email === user.email);
     const mealCount = myMeals.reduce((total, entry) => total + entry.meals, 0);
@@ -68,14 +67,12 @@ export default function Profile() {
     localStorage.setItem('token', '');
   };
 
-  // ✅ Loader condition: যতক্ষণ userInfo বা payment না আসে
-  if (!userInfo || payment === null) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center bg-gray-50">
-        <Loader />
-      </div>
-    );
-  }
+if (!userInfo || payment === null) {
+  return (
+   <Loader />
+  );
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-start py-10 px-4">
