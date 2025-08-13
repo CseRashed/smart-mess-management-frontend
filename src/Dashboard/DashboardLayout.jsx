@@ -4,54 +4,49 @@ import { Link, Outlet } from 'react-router-dom';
 import useMess from '../../Hooks/useMess';
 import { AuthContext } from '../AuthProvider/AuthProvider';
 import useMembers from '../../Hooks/useMembers';
+import Loader from '../compontens/Loader';
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const {
-    data: members = [],
-    isError,
-  } = useMembers();
+  const { data: members = [], isError } = useMembers();
   const { mess, isLoading, error } = useMess();
-const {handleLogOut}= useContext(AuthContext)
-const [notic,setNotice]= useState('')
-const uniqueId=localStorage.getItem('uniqueId')
-useEffect(()=>{
-  if(!uniqueId) return
+  const { handleLogOut } = useContext(AuthContext);
+  const [notic, setNotice] = useState('');
+  const uniqueId = localStorage.getItem('uniqueId');
 
-  fetch(`${import.meta.env.VITE_API}/notice?uniqueId=${uniqueId}`)
-  .then((res)=>res.json())
-  .then((data)=>setNotice(data.notice))
-},[uniqueId])
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading mess data...</p>
-      </div>
-    );
+  useEffect(() => {
+    if (!uniqueId) return;
+    fetch(`${import.meta.env.VITE_API}/notice?uniqueId=${uniqueId}`)
+      .then((res) => res.json())
+      .then((data) => setNotice(data.notice));
+  }, [uniqueId]);
 
-  if (error)
+  if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen text-red-500">
         <p>Error: {error.message}</p>
       </div>
     );
-
-     
-  // Get current user email from localStorage
-  const email = localStorage.getItem('email');
-
-  // Find logged-in user
-  const currentUser = members.find(member => member.email === email);
-const handleLogout = async () => {
-  try {
-    await handleLogOut();
-    localStorage.setItem('token','')
-  } catch (err) {
-    console.error('Logout failed:', err);
   }
-};
 
+  const email = localStorage.getItem('email');
+  const currentUser = members.find((member) => member.email === email);
 
+  const handleLogout = async () => {
+    try {
+      await handleLogOut();
+      localStorage.setItem('token', '');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
+  // 👇 Sidebar auto-close on mobile
+  const handleNavClick = () => {
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-100 relative overflow-hidden">
@@ -73,71 +68,51 @@ const handleLogout = async () => {
 
         {/* Navigation */}
         <nav className="space-y-4 text-gray-700">
-          <Link to="profile" className="block hover:text-emerald-600">
+          <Link to="profile" onClick={handleNavClick} className="block hover:text-emerald-600">
             Profile
           </Link>
 
-          {currentUser?.role==="Manager"&&(
-  
-          <Link to="/dashboard" className="block hover:text-emerald-600">
-            Dashboard
-          </Link>
-)} 
-     {currentUser?.role === "Manager" && (
-  <Link to="members" className="block hover:text-emerald-600">
-    Members
-  </Link>
-)}
+          {currentUser?.role === "Manager" && (
+            <>
+              <Link to="/dashboard" onClick={handleNavClick} className="block hover:text-emerald-600">
+                Dashboard
+              </Link>
 
-{currentUser?.role==="Manager"&&(
+              <Link to="members" onClick={handleNavClick} className="block hover:text-emerald-600">
+                Members
+              </Link>
 
-          <Link to="induvitualAmount" className="block hover:text-emerald-600">
-           Payment
-          </Link>
-)}  
-      {currentUser?.role==="Manager"&&(
-  
-          <Link to="addMeals" className="block hover:text-emerald-600">
-            Add Meal
-          </Link>
-)} 
-        {currentUser?.role==="Manager"&&(
-  
-          <Link to="mealsheet" className="block hover:text-emerald-600">
-            Meal Sheet
-          </Link>
-)} 
+              <Link to="induvitualAmount" onClick={handleNavClick} className="block hover:text-emerald-600">
+                Payment
+              </Link>
 
+              <Link to="addMeals" onClick={handleNavClick} className="block hover:text-emerald-600">
+                Add Meal
+              </Link>
 
-       {currentUser?.role==="Manager"&&(
-  
-          <Link to="expenses" className="block hover:text-emerald-600">
-            Expenses
-          </Link>
-)}  
-       {currentUser?.role==="Manager"&&(
-  
-          <Link to="summary" className="block hover:text-emerald-600">
-            Summary
-          </Link>
-)} 
-       
-       {currentUser?.role==="Manager"&&(
+              <Link to="mealsheet" onClick={handleNavClick} className="block hover:text-emerald-600">
+                Meal Sheet
+              </Link>
 
-          <Link to="history" className="block hover:text-emerald-600">
-            History
-          </Link>
-)} 
-       {currentUser?.role==="Manager"&&(
+              <Link to="expenses" onClick={handleNavClick} className="block hover:text-emerald-600">
+                Expenses
+              </Link>
 
-           <Link to="notice" className="block text-red-600 hover:text-emerald-600">
-            Notice
-          </Link>
-)} 
-  
-         
+              <Link to="summary" onClick={handleNavClick} className="block hover:text-emerald-600">
+                Summary
+              </Link>
 
-          <Link  onClick={handleLogout} to="/" className="block hover:text-red-600">
+              <Link to="history" onClick={handleNavClick} className="block hover:text-emerald-600">
+                History
+              </Link>
+
+              <Link to="notice" onClick={handleNavClick} className="block text-red-600 hover:text-emerald-600">
+                Notice
+              </Link>
+            </>
+          )}
+
+          <Link to="/" onClick={() => { handleNavClick(); handleLogout(); }} className="block hover:text-red-600">
             Log Out
           </Link>
         </nav>
@@ -160,25 +135,26 @@ const handleLogout = async () => {
           </button>
         </div>
 
-      <div className="relative w-fit mx-auto mt-6">
-  <h1 className="text-2xl  font-bold text-teal-700 ">
-    {mess?.mess?.toUpperCase() || 'No Mess Found'}
-  </h1>
-  <sup className="absolute -top-4 -right-10 text-xs md:text-sm text-teal-500 font-medium tracking-wide">
-    ({mess?.uniqueId || 'N/A'})
-  </sup>
-</div>
+        {/* Mess Info */}
+        <div className="relative w-fit mx-auto mt-6">
+          <h1 className="text-2xl font-bold text-teal-700">
+            {mess?.mess?.toUpperCase() || 'No Mess Found'}
+          </h1>
+          <sup className="absolute -top-4 -right-10 text-xs md:text-sm text-teal-500 font-medium tracking-wide">
+            ({mess?.uniqueId || 'N/A'})
+          </sup>
+        </div>
 
-<marquee
-        behavior="scroll"
-        direction="left"
-        scrollamount="5"
-        style={{ fontWeight: 'bold', color: '#EB2370' }} // Tailwind এর emerald-700
-      >
-          <span  style={{ marginRight: '50px' }}>
-            {notic}
-          </span>
-      </marquee>
+        {/* Notice Marquee */}
+        <marquee
+          behavior="scroll"
+          direction="left"
+          scrollamount="5"
+          style={{ fontWeight: 'bold', color: '#EB2370' }}
+        >
+          <span style={{ marginRight: '50px' }}>{notic}</span>
+        </marquee>
+{/* <Loader></Loader> */}
         {/* Page Content */}
         <div className="flex-1 overflow-y-auto overflow-x-auto p-4 md:p-6">
           <Outlet />

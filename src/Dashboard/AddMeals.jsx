@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import useMembers from '../../Hooks/useMembers';
-import Swal from 'sweetalert2';
 import useMess from '../../Hooks/useMess';
-import { Helmet } from 'react-helmet-async';
+import Swal from 'sweetalert2';
+import Loader from '../compontens/Loader';
 
 export default function AddMeals() {
-   useEffect(() => {
-      document.title = 'Meals';
-    }, []);
-  const { data: membersList = [], isLoading, isError, error } = useMembers();
   const [mealDate, setMealDate] = useState('');
   const [meals, setMeals] = useState({});
   const { mess } = useMess();
+
+  const {
+    data: membersList = [],
+    isLoading,
+    isError,
+    error,
+  } = useMembers();
+
+  useEffect(() => {
+    document.title = 'Meals';
+  }, []);
 
   const handleMealChange = (memberId, value) => {
     setMeals(prev => ({
@@ -30,27 +37,24 @@ export default function AddMeals() {
 
     const dataToSubmit = membersList.map(member => ({
       memberId: member._id,
-      email:member.email,
+      email: member.email,
       name: member.name,
-      uniqueId:mess?.uniqueId,
+      uniqueId: mess?.uniqueId,
       meals: Number(meals[member._id]) || 0,
       date: mealDate,
     }));
 
     try {
-     const token = localStorage.getItem('token'); // 🔑 Token আনো
-
-const res = await fetch(`${import.meta.env.VITE_API}/meals`, {
-  method: 'POST',
-  headers: {
-    'content-type': 'application/json',
-    'Authorization': `Bearer ${token}` // ✅ Token পাঠাও
-  },
-  body: JSON.stringify(dataToSubmit),
-});
-
-const result = await res.json();
-
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API}/meals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(dataToSubmit),
+      });
+      const result = await res.json();
 
       if (result.insertedCount > 0 || result.acknowledged) {
         Swal.fire('Success!', 'Meals submitted successfully!', 'success');
@@ -65,12 +69,28 @@ const result = await res.json();
     }
   };
 
-  if (isLoading) return <p className="text-center mt-10">Loading members...</p>;
-  if (isError) return <p className="text-center mt-10 text-red-500">Error: {error.message}</p>;
+  // Fullscreen loader for page load
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-red-500 text-center text-lg">Error: {error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto mt-12 p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-gray-700 mb-6 text-center">Add Meals for Members</h2>
+      <h2 className="text-2xl font-semibold text-gray-700 mb-6 text-center">
+        Add Meals for Members
+      </h2>
 
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
@@ -78,11 +98,11 @@ const result = await res.json();
           <input
             type="date"
             value={mealDate}
-           onChange={(e) => setMealDate(e.target.value)}
-  min={new Date().toISOString().slice(0, 8) + '01'}
-  max={new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
-    .toISOString()
-    .slice(0, 10)}
+            onChange={(e) => setMealDate(e.target.value)}
+            min={new Date().toISOString().slice(0, 8) + '01'}
+            max={new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+              .toISOString()
+              .slice(0, 10)}
             className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-300 w-full max-w-xs"
             required
           />

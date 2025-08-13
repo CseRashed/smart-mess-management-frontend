@@ -2,19 +2,24 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import useMembers from '../../Hooks/useMembers';
 import usePayments from '../../Hooks/usePayment';
-import { Helmet } from 'react-helmet-async';
+import Loader from '../compontens/Loader';
 
-export default function InduvitualAmount() {
-   useEffect(() => {
-      document.title = 'Payment';
-    }, []);
+export default function IndividualAmount() {
+useEffect(()=>{
+  document.title='Payments'
+},[])
+
   const month = new Date().toISOString().slice(0, 7);
   const uniqueId = localStorage.getItem('uniqueId');
-  const { data: members = [], isLoading, isError, error } = useMembers();
-  const { data: payments = [], refetch } = usePayments(month);
+
+  const { data: members = [], isLoading: loadingMembers, isError, error } = useMembers();
+  const { data: payments = [], isLoading: loadingPayments, refetch } = usePayments(month);
+
   const [amounts, setAmounts] = useState({});
   const [tempAmounts, setTempAmounts] = useState({});
   const [manager, setManager] = useState({});
+
+  const loading = loadingMembers || loadingPayments; // ✅ members বা payments load না হলে loader
 
   // Manager Info Load
   useEffect(() => {
@@ -36,7 +41,9 @@ export default function InduvitualAmount() {
   }, [payments]);
 
   const handleChange = (id, value) => {
-    setTempAmounts(prev => ({ ...prev, [id]: value }));
+    if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
+      setTempAmounts(prev => ({ ...prev, [id]: value }));
+    }
   };
 
   const handleBlur = async (memberId, memberName, memberEmail) => {
@@ -50,7 +57,7 @@ export default function InduvitualAmount() {
       }
 
       const result = await Swal.fire({
-        title: 'Are you sure?',
+        title: 'Confirm Update',
         text: `Change amount from ৳${previous || 0} to ৳${current || 0}?`,
         icon: 'warning',
         showCancelButton: true,
@@ -72,8 +79,9 @@ export default function InduvitualAmount() {
 
   const saveSinglePayment = async (memberId, amount, memberName, memberEmail) => {
     const amountNum = parseFloat(amount);
-    if (isNaN(amountNum)) {
-      Swal.fire('Invalid Input', 'Amount must be a valid number.', 'error');
+    if (isNaN(amountNum) || amountNum < 0) {
+      Swal.fire('Invalid Input', 'Amount must be a positive number.', 'error');
+      setTempAmounts(prev => ({ ...prev, [memberId]: amounts[memberId] || '' }));
       return;
     }
 
@@ -88,27 +96,18 @@ export default function InduvitualAmount() {
       managerEmail: manager?.email,
     };
 
-    console.log(payload); // ✅ Debug
-
     try {
-     const token = localStorage.getItem('token');
-
-const res = await fetch(`${import.meta.env.VITE_API}/payments`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,  // টোকেন এখানে যোগ করলাম
-  },
-  body: JSON.stringify([payload]),
-});
-
-
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_API}/payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify([payload]),
+      });
       const data = await res.json();
-      if (
-        data.result?.modifiedCount > 0 ||
-        data.result?.upsertedCount > 0 ||
-        data.success
-      ) {
+      if (data.result?.modifiedCount > 0 || data.result?.upsertedCount > 0 || data.success) {
         refetch();
       } else {
         throw new Error('No document updated or inserted');
@@ -119,8 +118,17 @@ const res = await fetch(`${import.meta.env.VITE_API}/payments`, {
     }
   };
 
-  if (isLoading) return <p className="text-center mt-10">Loading members...</p>;
-  if (isError) return <p className="text-center mt-10 text-red-500">Error: {error.message}</p>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen">
+      <Loader />
+    </div>
+  );
+
+  if (isError) return (
+    <div className="flex items-center justify-center h-screen">
+      <p className="text-red-500 text-lg">Error: {error.message}</p>
+    </div>
+  );
 
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
@@ -142,12 +150,8 @@ const res = await fetch(`${import.meta.env.VITE_API}/payments`, {
                 type="number"
                 placeholder="Enter amount (৳)"
                 value={tempAmounts[member._id] ?? ''}
-                onChange={(e) =>
-                  handleChange(member._id, e.target.value)
-                }
-                onBlur={() =>
-                  handleBlur(member._id, member.name, member.email)
-                }
+                onChange={e => handleChange(member._id, e.target.value)}
+                onBlur={() => handleBlur(member._id, member.name, member.email)}
                 className="border border-gray-300 rounded-md px-3 py-2 w-40 focus:outline-none focus:ring-2 focus:ring-emerald-300"
               />
               <span className="absolute top-1/2 right-2 transform -translate-y-1/2 text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

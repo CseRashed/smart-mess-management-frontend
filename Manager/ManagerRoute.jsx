@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import useMembers from '../Hooks/useMembers';
+// import Loader from '../src/compontens/Loader';
 
 export default function ManagerRoute({ children }) {
   const {
@@ -12,9 +13,9 @@ export default function ManagerRoute({ children }) {
   const email = localStorage.getItem('email');
 
   // Step 1: If loading or no members yet, show loader
-  if (isLoading || members.length === 0) {
-    return <p className="text-center py-10 font-semibold text-gray-500">Checking access...</p>;
-  }
+  // if (isLoading || members.length === 0) {
+  //   return <Loader></Loader>
+  // }
 
   // Step 2: If error or no email in localStorage
   if (isError || !email) {

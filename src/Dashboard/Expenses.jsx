@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import useMess from '../../Hooks/useMess';
 import useExpenses from '../../Hooks/useExpenses';
-import { Helmet } from 'react-helmet-async';
+import Loader from '../compontens/Loader';
 
 export default function Expenses() {
-   useEffect(() => {
-      document.title = 'Expense';
-    }, []);
-    const month = new Date().toISOString().slice(0, 7); // "2025-07" ফরম্যাট
+  useEffect(() => {
+    document.title = 'Expense';
+  }, []);
 
+  const month = new Date().toISOString().slice(0, 7); // "2025-07" format
   const { mess } = useMess();
-  const { data: expenses = [], isLoading, isError, refetch } = useExpenses(month);
+  const { data: expenses = [], isLoading, isError, refetch, error } = useExpenses(month);
 
   const [expenseData, setExpenseData] = useState({
     title: '',
@@ -50,19 +50,18 @@ export default function Expenses() {
     };
 
     try {
-    const token = localStorage.getItem('token'); 
+      const token = localStorage.getItem('token');
 
-const res = await fetch(`${import.meta.env.VITE_API}/expenses`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}` 
-  },
-  body: JSON.stringify(expense)
-});
+      const res = await fetch(`${import.meta.env.VITE_API}/expenses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(expense)
+      });
 
-const data = await res.json();
-
+      const data = await res.json();
 
       if (data.insertedId) {
         Swal.fire('Success', 'Expense added successfully!', 'success');
@@ -75,6 +74,23 @@ const data = await res.json();
       Swal.fire('Error', 'Failed to add expense', 'error');
     }
   };
+
+  // Fullscreen loader for page load
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-red-500 text-lg text-center">Failed to load expenses{error ? `: ${error.message}` : ''}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto mt-12 p-6 bg-white rounded-lg shadow-lg">
@@ -124,11 +140,7 @@ const data = await res.json();
       {/* Expense Table */}
       <div>
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Recent Expenses</h3>
-        {isLoading ? (
-          <p className="text-gray-500">Loading expenses...</p>
-        ) : isError ? (
-          <p className="text-red-500">Failed to load expenses.</p>
-        ) : expenses.length === 0 ? (
+        {expenses.length === 0 ? (
           <p className="text-gray-500">No expenses added yet.</p>
         ) : (
           <table className="w-full border-collapse border border-gray-300">
@@ -149,7 +161,7 @@ const data = await res.json();
                     <td className="border border-gray-300 px-4 py-2">৳ {exp.amount}</td>
                     <td className="border border-gray-300 px-4 py-2">{exp.date}</td>
                   </tr>
-              ))}
+                ))}
             </tbody>
           </table>
         )}

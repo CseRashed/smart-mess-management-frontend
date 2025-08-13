@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import useMembers from '../../Hooks/useMembers';
 import useMeals from '../../Hooks/useMeals';
-import { Helmet } from 'react-helmet-async';
+import Loader from '../compontens/Loader';
 
 export default function MealSheet() {
    useEffect(() => {
@@ -12,7 +12,7 @@ export default function MealSheet() {
   const { data: members = [], isLoading: memberLoading } = useMembers();
   const { data: meals = [], isLoading: mealLoading } = useMeals(month);
 
-  if (memberLoading || mealLoading) return <p className="text-center mt-10">Loading...</p>;
+  if (memberLoading || mealLoading) return <Loader></Loader>
 
   const memberMap = Object.fromEntries(members.map(m => [m._id, m.name]));
 

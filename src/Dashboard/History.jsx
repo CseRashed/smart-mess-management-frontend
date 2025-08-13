@@ -4,32 +4,35 @@ import useMembers from '../../Hooks/useMembers';
 import useMeals from '../../Hooks/useMeals';
 import usePayments from '../../Hooks/usePayment';
 import useExpenses from '../../Hooks/useExpenses';
-import { Helmet } from 'react-helmet-async';
+import Loader from '../compontens/Loader';
 
 export default function History() {
-   useEffect(() => {
-      document.title = 'History';
-    }, []);
+  useEffect(() => {
+    document.title = 'History';
+  }, []);
+
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [settlements, setSettlements] = useState([]);
 
-  const { data: members = [] } = useMembers();
-  const { data: meals = [] } = useMeals(selectedMonth);
-  const { data: payments = [] } = usePayments(selectedMonth);
-  const { data: expenses = [] } = useExpenses(selectedMonth);
+  // Fetch data from hooks
+  const { data: members = [], isLoading: loadingMembers, isError: errorMembers } = useMembers();
+  const { data: meals = [], isLoading: loadingMeals, isError: errorMeals } = useMeals(selectedMonth);
+  const { data: payments = [], isLoading: loadingPayments, isError: errorPayments } = usePayments(selectedMonth);
+  const { data: expenses = [], isLoading: loadingExpenses, isError: errorExpenses } = useExpenses(selectedMonth);
 
+  const loading = loadingMembers || loadingMeals || loadingPayments || loadingExpenses;
+  const anyError = errorMembers || errorMeals || errorPayments || errorExpenses;
+
+  // Fetch settlement data
   useEffect(() => {
     const token = localStorage.getItem('token');
-fetch(`${import.meta.env.VITE_API}/settlement`, {
-  method: 'GET',
-  headers: {
-    'Authorization': `Bearer ${token}`
-  }
-})
-  .then(res => res.json())
-  .then(data => setSettlements(data))
-  .catch(err => console.error('❌ Failed to fetch settlements:', err));
-
+    fetch(`${import.meta.env.VITE_API}/settlement`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => setSettlements(data))
+      .catch(err => console.error('❌ Failed to fetch settlements:', err));
   }, []);
 
   const getMealCount = (memberId) =>
@@ -46,7 +49,6 @@ fetch(`${import.meta.env.VITE_API}/settlement`, {
     const summaryArray = members.map(member => {
       const mealsCount = getMealCount(member._id);
       const paidAmount = getPaidAmount(member._id);
-
       return {
         name: member.name,
         memberId: member._id,
@@ -68,7 +70,6 @@ fetch(`${import.meta.env.VITE_API}/settlement`, {
       .map(member => {
         const cost = member.meals * mealRate;
         const balance = member.paid - cost;
-
         return {
           ...member,
           cost: cost.toFixed(2),
@@ -76,7 +77,7 @@ fetch(`${import.meta.env.VITE_API}/settlement`, {
           mealRate: mealRate.toFixed(2),
         };
       })
-      .filter(m => m.meals > 0 || m.paid > 0 || Number(m.cost) > 0); // Filter only those who have data
+      .filter(m => m.meals > 0 || m.paid > 0 || Number(m.cost) > 0);
   };
 
   const summary = getSummary();
@@ -93,16 +94,11 @@ fetch(`${import.meta.env.VITE_API}/settlement`, {
 
     try {
       const token = localStorage.getItem('token');
-
-const res = await fetch(`${import.meta.env.VITE_API}/settlement`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`  // ✅ attach the token
-  },
-  body: JSON.stringify(payload),
-});
-
+      const res = await fetch(`${import.meta.env.VITE_API}/settlement`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
 
       const data = await res.json();
       if (data.insertedId) {
@@ -113,6 +109,18 @@ const res = await fetch(`${import.meta.env.VITE_API}/settlement`, {
       Swal.fire('Error', 'Settlement failed.', 'error');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (anyError) {
+    return <p className="text-center mt-10 text-red-500">Failed to load data.</p>;
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -137,7 +145,7 @@ const res = await fetch(`${import.meta.env.VITE_API}/settlement`, {
 
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg shadow-md overflow-hidden text-sm">
-              <thead className="bg-teal-50 text-teal-700">
+              <thead className="bg-emerald-100 text-teal-700">
                 <tr>
                   <th className="py-2 px-4">Name</th>
                   <th className="py-2 px-4">Meals</th>

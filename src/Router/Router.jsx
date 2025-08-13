@@ -16,6 +16,7 @@ import Login from '../Pages/Login/Login';
 import ManagerRoute from '../../Manager/ManagerRoute';
 import Unauthorized from './UnAuthorize';
 import Notice from '../Dashboard/Notice';
+import NotFound from './NotFound';
 
 const router = createBrowserRouter([
   {
@@ -121,7 +122,10 @@ const router = createBrowserRouter([
     element: <Unauthorized></Unauthorized>,
   },
   ,
-  {},
+  {
+    path:'*',
+    element:<NotFound></NotFound>
+  },
 ]);
 
 export default router;

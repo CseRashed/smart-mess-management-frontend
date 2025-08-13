@@ -7,7 +7,7 @@ import usePayments from '../../Hooks/usePayment';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
-import { Helmet } from 'react-helmet-async';
+import Loader from '../compontens/Loader';
 
 const DashboardCard = ({ icon, label, value }) => (
   <div className="bg-white rounded-lg p-5 shadow hover:shadow-lg transition">
@@ -22,22 +22,39 @@ const DashboardCard = ({ icon, label, value }) => (
 );
 
 export default function Dashboard() {
-   useEffect(() => {
-      document.title = 'Dashboard';
-    }, []);
-    const month = new Date().toISOString().slice(0, 7); // "2025-07" ফরম্যাট
+  useEffect(() => {
+    document.title = 'Dashboard';
+  }, []);
+
+  const month = new Date().toISOString().slice(0, 7); // "2025-08" format
 
   const { data: members = [], isLoading: membersLoading, isError: membersError, error: membersErrorMsg } = useMembers();
   const { data: meals = [], isLoading: loadingMeals, isError: errorMeals, error: errorMealsMsg } = useMeals(month);
   const { data: expenses = [], isLoading: loadingExpenses, isError: errorExpenses, error: errorExpensesMsg } = useExpenses(month);
   const { data: payments = [], isLoading: loadingPayments, isError: errorPayments, error: errorPaymentsMsg } = usePayments(month);
 
-  if (membersLoading || loadingMeals || loadingExpenses || loadingPayments) return <p className="text-center mt-10">Loading...</p>;
-  if (membersError) return <p className="text-red-600 text-center mt-10">Error loading members: {membersErrorMsg.message}</p>;
-  if (errorMeals) return <p className="text-red-600 text-center mt-10">Error loading meals: {errorMealsMsg.message}</p>;
-  if (errorExpenses) return <p className="text-red-600 text-center mt-10">Error loading expenses: {errorExpensesMsg.message}</p>;
-  if (errorPayments) return <p className="text-red-600 text-center mt-10">Error loading payments: {errorPaymentsMsg.message}</p>;
+  // ✅ Fullscreen loader
+  if (membersLoading || loadingMeals || loadingExpenses || loadingPayments) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+        <Loader></Loader>
+      </div>
+    );
+  }
 
+  // ✅ Fullscreen error handler
+  const renderError = (msg) => (
+    <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+      <p className="text-red-600 text-center text-lg">{msg}</p>
+    </div>
+  );
+
+  if (membersError) return renderError(`Error loading members: ${membersErrorMsg.message}`);
+  if (errorMeals) return renderError(`Error loading meals: ${errorMealsMsg.message}`);
+  if (errorExpenses) return renderError(`Error loading expenses: ${errorExpensesMsg.message}`);
+  if (errorPayments) return renderError(`Error loading payments: ${errorPaymentsMsg.message}`);
+
+  // ✅ Dashboard calculations
   const memberCount = members.length;
   const totalMeals = meals.reduce((sum, meal) => sum + Number(meal.meals || 0), 0);
   const totalExpenses = expenses.reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
@@ -70,35 +87,28 @@ export default function Dashboard() {
 
   return (
     <div className="flex-1 flex flex-col">
+      {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between bg-white p-4 shadow z-10">
         <h2 className="text-xl font-bold text-emerald-600">Dashboard</h2>
       </div>
 
       <main className="p-6 mt-4 md:mt-0">
+        {/* Desktop Header */}
         <div className="hidden md:flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
           <p className="text-sm text-gray-600">Welcome, <span className="font-semibold">Manager</span></p>
         </div>
 
+        {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
-  <div className="col-span-1">
-    <DashboardCard icon={<FaUserFriends className="text-3xl text-blue-500" />} label="Members" value={memberCount} />
-  </div>
-  <div className="col-span-1">
-    <DashboardCard icon={<FaUtensils className="text-3xl text-orange-400" />} label="Total Meals" value={totalMeals} />
-  </div>
-  <div className="col-span-1">
-    <DashboardCard icon={<FaMoneyCheckAlt className="text-3xl text-green-500" />} label="Payment" value={`৳ ${totalPayments}`} />
-  </div>
-  <div className="col-span-1">
-    <DashboardCard icon={<FaMoneyCheckAlt className="text-3xl text-green-500" />} label="Expenses" value={`৳ ${totalExpenses}`} />
-  </div>
-  <div className="col-span-1">
-    <DashboardCard icon={<FaChartPie className="text-3xl text-purple-500" />} label="Meal Rate" value={mealRate === 0 ? mealRate : `৳ ${mealRate}`} />
-  </div>
-</div>
+          <DashboardCard icon={<FaUserFriends className="text-3xl text-blue-500" />} label="Members" value={memberCount} />
+          <DashboardCard icon={<FaUtensils className="text-3xl text-orange-400" />} label="Total Meals" value={totalMeals} />
+          <DashboardCard icon={<FaMoneyCheckAlt className="text-3xl text-green-500" />} label="Payment" value={`৳ ${totalPayments}`} />
+          <DashboardCard icon={<FaMoneyCheckAlt className="text-3xl text-red-500" />} label="Expenses" value={`৳ ${totalExpenses}`} />
+          <DashboardCard icon={<FaChartPie className="text-3xl text-purple-500" />} label="Meal Rate" value={mealRate === 0 ? mealRate : `৳ ${mealRate}`} />
+        </div>
 
-
+        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-md border border-orange-100 hover:shadow-orange-200 transition">
             <h2 className="text-lg font-semibold text-orange-600 mb-4 text-center">🍽️ Meals Over Time</h2>

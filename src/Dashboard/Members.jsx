@@ -1,21 +1,18 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaCrown } from 'react-icons/fa';
 import useMembers from '../../Hooks/useMembers';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../AuthProvider/AuthProvider';
-import { Helmet } from 'react-helmet-async';
-import { useEffect } from 'react';
+import Loader from '../compontens/Loader';
 
 export default function Members() {
-  useEffect(() => {
-    document.title = 'Members';
-  }, []);
-
-
   const { handleRegister } = useContext(AuthContext);
   const { data: members = [], isLoading, isError, error, refetch } = useMembers();
   const uniqueId = localStorage.getItem('uniqueId');
 
+  useEffect(() => {
+    document.title = 'Members';
+  }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -32,20 +29,18 @@ export default function Members() {
       const firebaseUser = userCredential?.user;
 
       const info = { name, email, uniqueId };
+      const token = localStorage.getItem('token');
 
-   const token = localStorage.getItem('token'); // 🔑 Token আনো
+      const res = await fetch(`${import.meta.env.VITE_API}/members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(info),
+      });
 
-const res = await fetch(`${import.meta.env.VITE_API}/members`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`, // ✅ Token পাঠাও
-  },
-  body: JSON.stringify(info),
-});
-
-const data = await res.json();
-
+      const data = await res.json();
 
       if (data?.success) {
         Swal.fire('✅ Success', 'Member added successfully!', 'success').then(() => {
@@ -60,44 +55,42 @@ const data = await res.json();
       Swal.fire('Error', err.message || 'Firebase registration failed', 'error');
     }
   };
-const handleDelete = (id) => {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'Do you really want to delete this member?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#e3342f',
-    cancelButtonColor: '#6c757d',
-    confirmButtonText: 'Yes, delete it!',
-  }).then((result) => {
-    if (result.isConfirmed) {
-      const token = localStorage.getItem('token');
 
-      fetch(`${import.meta.env.VITE_API}/members/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.message?.toLowerCase().includes('deleted')) {
-            Swal.fire('Deleted!', 'Member has been deleted.', 'success');
-            refetch(); // or update state
-          } else {
-            Swal.fire('Error!', 'Failed to delete member.', 'error');
-          }
+  const handleDelete = (id) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you really want to delete this member?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e3342f',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, delete it!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        fetch(`${import.meta.env.VITE_API}/members/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
         })
-        .catch((err) => {
-          console.error('Delete error:', err);
-          Swal.fire('Error!', 'Failed to delete member.', 'error');
-        });
-    }
-  });
-};
-
-
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.message?.toLowerCase().includes('deleted')) {
+              Swal.fire('Deleted!', 'Member has been deleted.', 'success');
+              refetch();
+            } else {
+              Swal.fire('Error!', 'Failed to delete member.', 'error');
+            }
+          })
+          .catch((err) => {
+            console.error('Delete error:', err);
+            Swal.fire('Error!', 'Failed to delete member.', 'error');
+          });
+      }
+    });
+  };
 
   const handleSetManager = (memberId) => {
     const manager = members.find((mem) => mem.role === 'Manager');
@@ -113,17 +106,15 @@ const handleDelete = (id) => {
       confirmButtonText: 'Yes, make manager',
     }).then((result) => {
       if (result.isConfirmed) {
-        const token = localStorage.getItem('token'); // টোকেন নেওয়া হচ্ছে লোকাল স্টোরেজ থেকে
-
-fetch(`${import.meta.env.VITE_API}/members`, {
-  method: 'PATCH',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`, // 🔐 টোকেন পাঠানো হচ্ছে
-  },
-  body: JSON.stringify({ memberId, managerId }),
-})
-
+        const token = localStorage.getItem('token');
+        fetch(`${import.meta.env.VITE_API}/members`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ memberId, managerId }),
+        })
           .then((res) => res.json())
           .then((data) => {
             if (data.success) {
@@ -148,13 +139,29 @@ fetch(`${import.meta.env.VITE_API}/members`, {
     return 0;
   });
 
-  if (isLoading) return <p className="text-center mt-10">Loading members...</p>;
-  if (isError) return <p className="text-center mt-10 text-red-500">Error: {error.message}</p>;
+// Fullscreen loader condition
+if (isLoading || members.length === 0) {
+  return (
+    <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+      <Loader />
+    </div>
+  );
+}
+
+
+  if (isError) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-red-500 text-center text-lg">Error: {error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">👥 Manage Members</h2>
 
+      {/* Add Member Form */}
       <div className="bg-white p-4 shadow rounded mb-6">
         <form onSubmit={handleAdd} className="grid md:grid-cols-3 gap-4">
           <input type="text" name="name" required placeholder="Full Name" className="border px-4 py-2 rounded" />
@@ -168,6 +175,7 @@ fetch(`${import.meta.env.VITE_API}/members`, {
         </form>
       </div>
 
+      {/* Members Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full border">
           <thead className="bg-gray-100 text-left">
