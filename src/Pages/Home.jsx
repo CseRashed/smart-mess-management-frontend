@@ -1,150 +1,308 @@
-import React from 'react';
+// Home.js
+import React from "react";
 import {
-  FaMoneyBillWave,
-  FaUtensils,
-  FaUserShield,
-  FaQuoteLeft,
-  FaQuestionCircle,
-} from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
-function Home() {
+const { width } = Dimensions.get("window");
+
+export default function Home() {
+  const navigation = useNavigation();
+
   return (
-    <div>
+    <ScrollView contentContainerStyle={styles.container}>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-[#c9e4f6] via-[#d6f7ef] to-[#eaf9e2] text-gray-800 py-16 px-4 sm:px-6 md:px-6 text-center">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold drop-shadow-sm">
-          Smart Mess Management
-        </h1>
-        <p className="mt-3 text-sm sm:text-lg md:text-xl text-gray-700 max-w-xl mx-auto">
+      <LinearGradient
+        colors={["#c9e4f6", "#d6f7ef", "#eaf9e2"]}
+        style={styles.heroContainer}
+      >
+        <Text style={styles.heroTitle}>Smart Mess Management</Text>
+        <Text style={styles.heroText}>
           Simplify your daily mess operations with a smooth, elegant platform.
-        </p>
-      </section>
+        </Text>
+      </LinearGradient>
 
       {/* Features Section */}
-      <section className="py-12 px-4 sm:px-6 md:px-6 bg-gray-50">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-10">
-          ✨ Why Choose Smart Mess?
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}> Why Choose Smart Mess?</Text>
+        <View style={styles.grid}>
           <FeatureCard
-            icon={<FaMoneyBillWave className="text-3xl sm:text-4xl text-teal-500" />}
+            icon="money-bill-wave"
+            color="#14b8a6"
             title="Expense Tracking"
             description="Easily track and manage daily expenses with transparency."
           />
           <FeatureCard
-            icon={<FaUtensils className="text-3xl sm:text-4xl text-amber-500" />}
+            icon="utensils"
+            color="#f59e0b"
             title="Meal Count"
             description="Log daily meals with a click and keep everything organized."
           />
           <FeatureCard
-            icon={<FaUserShield className="text-3xl sm:text-4xl text-indigo-500" />}
+            icon="user-shield"
+            color="#6366f1"
             title="Secure Roles"
             description="Separate access for manager and members for better security."
           />
-        </div>
-      </section>
+        </View>
+      </View>
 
       {/* How It Works Section */}
-      <section className="py-12 px-4 sm:px-6 md:px-6 bg-white">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-10">
-          🛠️ How It Works
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-center">
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}> How It Works</Text>
+        <View style={styles.grid}>
           <InfoCard step="1" title="Create or Join a Mess" />
           <InfoCard step="2" title="Add Meals & Expenses Daily" />
           <InfoCard step="3" title="Get Dashboard Calculations" />
-        </div>
-      </section>
+        </View>
+      </View>
 
       {/* Testimonials */}
-      <section className="bg-gray-50 py-12 px-4 sm:px-6 md:px-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-10">
-          💬 What Users Say
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-          <Testimonial
-            name="Rafiul Islam"
-            message="Smart Mess made our mess life super easy! Now no more fighting over calculation errors!"
-          />
-          <Testimonial
-            name="Mim Jannat"
-            message="The design is clean and easy to use. Tracking meals is just a click away!"
-          />
-        </div>
-      </section>
+      <View style={[styles.section, { backgroundColor: "#f9fafb" }]}>
+        <Text style={styles.sectionTitle}> What Users Say</Text>
+        <Testimonial
+          name="Rafiul Islam"
+          message="Smart Mess made our mess life super easy! Now no more fighting over calculation errors!"
+        />
+        <Testimonial
+          name="Mim Jannat"
+          message="The design is clean and easy to use. Tracking meals is just a click away!"
+        />
+      </View>
 
-      {/* FAQ Section */}
-      <section className="py-12 px-4 sm:px-6 md:px-6 bg-white">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-10">
-          ❓ Frequently Asked Questions
-        </h2>
-        <div className="space-y-5 max-w-3xl mx-auto">
-          <Faq
-            question="Is this platform free?"
-            answer="Yes, Smart Mess is completely free to use for individuals and messes."
-          />
-          <Faq
-            question="Can I use it on mobile?"
-            answer="Absolutely! The app is fully responsive and works smoothly on phones and tablets."
-          />
-          <Faq
-            question="Who can see the expense data?"
-            answer="Only mess members and managers can view internal data securely."
-          />
-        </div>
-      </section>
+      {/* FAQ */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}> Frequently Asked Questions</Text>
+        <Faq
+          question="Is this platform free?"
+          answer="Yes, Smart Mess is completely free to use for individuals and messes."
+        />
+        <Faq
+          question="Can I use it on mobile?"
+          answer="Absolutely! The app is fully responsive and works smoothly on phones and tablets."
+        />
+        <Faq
+          question="Who can see the expense data?"
+          answer="Only mess members and managers can view internal data securely."
+        />
+      </View>
 
-      {/* CTA Section */}
-      <section className="bg-emerald-500 text-white py-12 px-4 sm:px-6 md:px-6 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold">🎉 Get Started Today!</h2>
-        <p className="mt-3 text-base sm:text-lg md:text-lg max-w-md mx-auto">
+      {/* CTA */}
+      <LinearGradient
+        colors={["#16a34a", "#22c55e"]}
+        style={styles.ctaContainer}
+      >
+        <Text style={styles.ctaTitle}> Get Started Today!</Text>
+        <Text style={styles.ctaText}>
           Join your mess or create one and simplify your mess life now.
-        </p>
-        <div className="mt-5">
-          <Link
-            to={'register'}
-            className="bg-white text-emerald-600 font-semibold py-3 px-6 rounded-full hover:bg-gray-100 transition"
-          >
-            Register Now
-          </Link>
-        </div>
-      </section>
-    </div>
+        </Text>
+        <TouchableOpacity
+          style={styles.ctaButton}
+          onPress={() => navigation.navigate("Register")}
+        >
+          <Text style={styles.ctaButtonText}>Register Now</Text>
+        </TouchableOpacity>
+      </LinearGradient>
+    </ScrollView>
   );
 }
 
-// Reusable Components
-const FeatureCard = ({ icon, title, description }) => (
-  <div className="bg-white p-5 sm:p-6 shadow-md rounded-lg text-center border hover:shadow-xl transition-all duration-300">
-    <div className="mb-3">{icon}</div>
-    <h3 className="text-lg sm:text-xl font-bold text-gray-800">{title}</h3>
-    <p className="text-sm sm:text-base text-gray-600 mt-1">{description}</p>
-  </div>
+// Feature Card
+const FeatureCard = ({ icon, color, title, description }) => (
+  <View style={styles.featureCard}>
+    <FontAwesome5 name={icon} size={32} color={color} style={{ marginBottom: 8 }} />
+    <Text style={styles.featureTitle}>{title}</Text>
+    <Text style={styles.featureDesc}>{description}</Text>
+  </View>
 );
 
+// Info Card
 const InfoCard = ({ step, title }) => (
-  <div className="bg-lime-50 p-5 sm:p-6 rounded shadow hover:shadow-md transition-all">
-    <div className="text-5xl sm:text-6xl font-bold text-emerald-400 mb-3">{step}</div>
-    <h4 className="text-lg sm:text-xl font-semibold text-gray-700">{title}</h4>
-  </div>
+  <View style={styles.infoCard}>
+    <Text style={styles.infoStep}>{step}</Text>
+    <Text style={styles.infoTitle}>{title}</Text>
+  </View>
 );
 
+// Testimonial
 const Testimonial = ({ name, message }) => (
-  <div className="bg-white p-5 sm:p-6 rounded-lg shadow-md border">
-    <FaQuoteLeft className="text-teal-400 text-xl sm:text-2xl mb-3" />
-    <p className="text-sm sm:text-base text-gray-700 italic">"{message}"</p>
-    <p className="mt-3 text-xs sm:text-sm font-semibold text-gray-800">- {name}</p>
-  </div>
+  <View style={styles.testimonialCard}>
+    <FontAwesome5 name="quote-left" size={20} color="#14b8a6" style={{ marginBottom: 6 }} />
+    <Text style={styles.testimonialText}>"{message}"</Text>
+    <Text style={styles.testimonialName}>- {name}</Text>
+  </View>
 );
 
+// FAQ
 const Faq = ({ question, answer }) => (
-  <div className="bg-gray-100 p-3 sm:p-4 rounded-md">
-    <h4 className="font-semibold text-emerald-600 flex items-center gap-2 text-sm sm:text-base">
-      <FaQuestionCircle /> {question}
-    </h4>
-    <p className="text-xs sm:text-sm text-gray-700 mt-1">{answer}</p>
-  </div>
+  <View style={styles.faqCard}>
+    <Text style={styles.faqQuestion}>❓ {question}</Text>
+    <Text style={styles.faqAnswer}>{answer}</Text>
+  </View>
 );
 
-export default Home;
+const styles = StyleSheet.create({
+  container: {
+    paddingBottom: 40,
+    backgroundColor: "#fff",
+  },
+  heroContainer: {
+    width: width,
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#0f766e",
+    textAlign: "center",
+    marginBottom: 15,
+    textShadowColor: "rgba(0,0,0,0.15)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  heroText: {
+    fontSize: 16,
+    color: "#065f46",
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  section: {
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#065f46",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+  },
+  featureCard: {
+    width: width * 0.28,
+    backgroundColor: "#fff",
+    padding: 15,
+    marginVertical: 10,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  featureDesc: {
+    fontSize: 12,
+    textAlign: "center",
+    color: "#4b5563",
+  },
+  infoCard: {
+    width: width * 0.28,
+    backgroundColor: "#dcfce7",
+    padding: 15,
+    marginVertical: 10,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  infoStep: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#16a34a",
+    marginBottom: 8,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  testimonialCard: {
+    backgroundColor: "#fff",
+    padding: 15,
+    marginVertical: 10,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  testimonialText: {
+    fontStyle: "italic",
+    fontSize: 14,
+    color: "#374151",
+    marginBottom: 6,
+  },
+  testimonialName: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#065f46",
+    textAlign: "right",
+  },
+  faqCard: {
+    backgroundColor: "#f3f4f6",
+    padding: 12,
+    borderRadius: 10,
+    marginVertical: 6,
+  },
+  faqQuestion: {
+    fontWeight: "bold",
+    fontSize: 14,
+    color: "#16a34a",
+    marginBottom: 4,
+  },
+  faqAnswer: {
+    fontSize: 12,
+    color: "#374151",
+  },
+  ctaContainer: {
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  ctaTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+  },
+  ctaText: {
+    fontSize: 14,
+    color: "#e5e7eb",
+    textAlign: "center",
+    marginVertical: 10,
+    maxWidth: 280,
+  },
+  ctaButton: {
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 30,
+    marginTop: 10,
+  },
+  ctaButtonText: {
+    color: "#16a34a",
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+});
